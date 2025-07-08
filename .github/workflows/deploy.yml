@@ -21,26 +21,39 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    env:
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       
+      - name: Setup build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential python3
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20.18.0'
           cache: 'npm'
           cache-dependency-path: nuxt-app/package-lock.json
       
       - name: Install dependencies
-        run: |
-          cd nuxt-app
-          npm ci
+        run: npm ci --ignore-scripts
+        working-directory: nuxt-app
+      
+      - name: Install native dependencies
+        run: npm rebuild
+        working-directory: nuxt-app
+      
+      - name: Prepare Nuxt
+        run: npx nuxt prepare
+        working-directory: nuxt-app
       
       - name: Build
-        run: |
-          cd nuxt-app
-          npm run generate
+        run: npm run generate
+        working-directory: nuxt-app
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
