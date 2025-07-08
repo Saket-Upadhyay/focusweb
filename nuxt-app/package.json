@@ -1,0 +1,20 @@
+{
+  "name": "just-a-min",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "build:static": "nuxt generate",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "description": "Just A Min - A playful, modern focus timer app.",
+  "dependencies": {
+    "nuxt": "^3.17.6",
+    "typescript": "^5.8.3",
+    "vue": "^3.5.17",
+    "vue-router": "^4.5.1"
+  }
+}
