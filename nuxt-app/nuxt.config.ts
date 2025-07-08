@@ -18,5 +18,10 @@ export default defineNuxtConfig({
   // Build configuration for static hosting
   nitro: {
     preset: 'static'
+  },
+  
+  // Ensure proper static generation
+  experimental: {
+    payloadExtraction: false
   }
 });

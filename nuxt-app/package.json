@@ -5,6 +5,7 @@
   "scripts": {
     "build": "nuxt build",
     "build:static": "nuxt generate",
+    "build:ci": "./scripts/build.sh",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
