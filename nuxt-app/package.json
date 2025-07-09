@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "build:static": "nuxt generate",
     "build:ci": "./scripts/build.sh",
+    "build:test": "NODE_ENV=production nuxt generate",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",

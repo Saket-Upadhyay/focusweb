@@ -1,0 +1,64 @@
+<svg width="800" height="200" viewBox="0 0 800 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#42b8ff"/>
+      <stop offset="100%" stop-color="#1565c0"/>
+    </linearGradient>
+    
+    <linearGradient id="raindropGradient" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#e3f6fd" stop-opacity="0.7"/>
+    </linearGradient>
+    
+    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e3f6fd"/>
+    </linearGradient>
+    
+    <filter id="dropShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000000" flood-opacity="0.2"/>
+    </filter>
+    
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Icon circle -->
+  <circle cx="100" cy="100" r="80" fill="url(#bgGradient)" stroke="#ffffff" stroke-width="4"/>
+  
+  <!-- Main raindrop in icon -->
+  <path d="M100 40C100 40 115 70 115 90C115 110 100 130 100 130C100 130 85 110 85 90C85 70 100 40 100 40Z" fill="url(#raindropGradient)" filter="url(#dropShadow)"/>
+  
+  <!-- Secondary raindrops -->
+  <path d="M70 60C70 60 80 80 80 95C80 110 70 125 70 125C70 125 60 110 60 95C60 80 70 60 70 60Z" fill="#e3f6fd" opacity="0.8"/>
+  <path d="M130 65C130 65 140 82 140 96C140 110 130 122 130 122C130 122 120 110 120 96C120 82 130 65 130 65Z" fill="#e3f6fd" opacity="0.7"/>
+  
+  <!-- Water ripples -->
+  <circle cx="100" cy="150" r="20" fill="none" stroke="#e3f6fd" stroke-width="2" opacity="0.8"/>
+  <circle cx="100" cy="150" r="30" fill="none" stroke="#e3f6fd" stroke-width="1" opacity="0.6"/>
+  
+  <!-- App name text -->
+  <text x="220" y="120" font-family="'Noto Sans', 'Quicksand', 'Inter', 'Roboto', Arial, sans-serif" font-size="64" font-weight="700" fill="url(#textGradient)" filter="url(#glow)">
+    Just A Min
+  </text>
+  
+  <!-- Tagline -->
+  <text x="220" y="150" font-family="'Noto Sans', 'Quicksand', 'Inter', 'Roboto', Arial, sans-serif" font-size="24" font-weight="400" fill="#e3f6fd" opacity="0.8">
+    Focus Timer
+  </text>
+  
+  <!-- Decorative water elements -->
+  <circle cx="650" cy="80" r="4" fill="#e3f6fd" opacity="0.6"/>
+  <circle cx="680" cy="60" r="3" fill="#e3f6fd" opacity="0.5"/>
+  <circle cx="720" cy="100" r="5" fill="#e3f6fd" opacity="0.7"/>
+  <circle cx="750" cy="40" r="2" fill="#e3f6fd" opacity="0.4"/>
+  
+  <!-- Subtle wave at bottom -->
+  <path d="M180 180 Q400 190 620 180" stroke="#ffffff" stroke-width="1" fill="none" opacity="0.3"/>
+</svg> 
