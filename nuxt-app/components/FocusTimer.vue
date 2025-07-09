@@ -95,8 +95,6 @@
             </div>
           </div>
         </div>
-      </div>
-      
       <BaseModal
         v-model:isOpen="settingsOpen"
         title="Settings"
@@ -156,6 +154,7 @@
           </p>
         </template>
       </BaseModal>
+      </div>
     </ErrorBoundary>
   </div>
 </template>
@@ -234,8 +233,20 @@ const { globalLoading } = useLoading();
 const timeInWords = computed(() => formatTimeInWords(minutes.value, seconds.value));
 
 function handleTimerFinish(): void {
-  if (!hasPlayedChime.value && isRunning.value) {
+  console.log('handleTimerFinish', {
+    hasPlayedChime: hasPlayedChime.value,
+    isRunning: isRunning.value,
+    chimeEnabled: chimeEnabled.value
+  });
+  if (!hasPlayedChime.value) {
+    console.log('Playing chime at timer end');
     playChime(false, chimeEnabled.value);
+  } else {
+    console.log('Chime not played', {
+      hasPlayedChime: hasPlayedChime.value,
+      isRunning: isRunning.value,
+      chimeEnabled: chimeEnabled.value
+    });
   }
   showNotification();
 }
