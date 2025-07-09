@@ -254,121 +254,674 @@ function playChime(isTest: boolean = false): void {
     audioContext.resume();
   }
   
-  // Create a classical music-inspired chime with orchestral harmonies
-  const duration = 8.0; // 8 seconds - longer for classical progression
+  // Create new generation hip-hop/rap beat inspired by Metro Boomin & Schoolboy Q
+  const duration = 20.0; // 20 seconds - extended for longer play
   const now = audioContext.currentTime;
-  
-  // Classical chord progression: I - IV - V - I (C major)
-  // Each chord has multiple voices for rich orchestral sound
-  const chordProgression = [
-    // C major (I) - Root position
-    { time: 0, chord: [
-      { freq: 261.63, type: 'sine', gain: 0.4, voice: 'bass' },      // C3 - bass
-      { freq: 523.25, type: 'sine', gain: 0.35, voice: 'tenor' },     // C4 - tenor
-      { freq: 659.25, type: 'sine', gain: 0.3, voice: 'alto' },       // E4 - alto
-      { freq: 783.99, type: 'sine', gain: 0.25, voice: 'soprano' },   // G4 - soprano
-      { freq: 1046.50, type: 'triangle', gain: 0.15, voice: 'harmony' } // C5 - harmony
-    ]},
-    // F major (IV) - First inversion
-    { time: 2.5, chord: [
-      { freq: 349.23, type: 'sine', gain: 0.4, voice: 'bass' },       // F3 - bass
-      { freq: 523.25, type: 'sine', gain: 0.35, voice: 'tenor' },     // C4 - tenor
-      { freq: 698.46, type: 'sine', gain: 0.3, voice: 'alto' },       // F4 - alto
-      { freq: 880.00, type: 'sine', gain: 0.25, voice: 'soprano' },   // A4 - soprano
-      { freq: 1396.91, type: 'triangle', gain: 0.15, voice: 'harmony' } // F5 - harmony
-    ]},
-    // G major (V) - Second inversion
-    { time: 5.0, chord: [
-      { freq: 392.00, type: 'sine', gain: 0.4, voice: 'bass' },       // G3 - bass
-      { freq: 523.25, type: 'sine', gain: 0.35, voice: 'tenor' },     // C4 - tenor
-      { freq: 659.25, type: 'sine', gain: 0.3, voice: 'alto' },       // E4 - alto
-      { freq: 783.99, type: 'sine', gain: 0.25, voice: 'soprano' },   // G4 - soprano
-      { freq: 1567.98, type: 'triangle', gain: 0.15, voice: 'harmony' } // G5 - harmony
-    ]},
-    // C major (I) - Final resolution
-    { time: 7.5, chord: [
-      { freq: 261.63, type: 'sine', gain: 0.4, voice: 'bass' },       // C3 - bass
-      { freq: 523.25, type: 'sine', gain: 0.35, voice: 'tenor' },     // C4 - tenor
-      { freq: 659.25, type: 'sine', gain: 0.3, voice: 'alto' },       // E4 - alto
-      { freq: 783.99, type: 'sine', gain: 0.25, voice: 'soprano' },   // G4 - soprano
-      { freq: 1046.50, type: 'triangle', gain: 0.15, voice: 'harmony' } // C5 - harmony
-    ]}
-  ];
+  const bpm = 135; // New gen hip-hop BPM
+  const beatDuration = 60 / bpm; // Duration of one beat
   
   // Create a master gain node for overall volume control
   const masterGain = audioContext.createGain();
   masterGain.connect(audioContext.destination);
-  masterGain.gain.setValueAtTime(0, now);
-  masterGain.gain.linearRampToValueAtTime(0.7, now + 1.0);
-  masterGain.gain.exponentialRampToValueAtTime(0.01, now + duration);
   
-  // Play each chord in the progression
-  chordProgression.forEach(({ time, chord }, chordIndex) => {
-    const chordStartTime = now + time;
-    const chordDuration = chordIndex === chordProgression.length - 1 ? 
-      duration - time : 
-      chordProgression[chordIndex + 1].time - time;
+  // Smooth fade in and out for seamless looping - softer approach
+  masterGain.gain.setValueAtTime(0, now);
+  masterGain.gain.linearRampToValueAtTime(0.6, now + 0.5); // Slower, gentler rise
+  masterGain.gain.setValueAtTime(0.6, now + duration - 0.8);
+  masterGain.gain.linearRampToValueAtTime(0, now + duration);
+  
+  // Soothing 808 bass - less aggressive
+  const create808Bass = (freq: number, startTime: number, slideIntensity: number = 1.0) => {
+    const oscillator = audioContext!.createOscillator();
+    const gainNode = audioContext!.createGain();
+    const distortion = audioContext!.createWaveShaper();
+    const filter = audioContext!.createBiquadFilter();
+    const compressor = audioContext!.createDynamicsCompressor();
     
-    chord.forEach(({ freq, type, gain, voice }, noteIndex) => {
+    oscillator.connect(gainNode);
+    gainNode.connect(distortion);
+    distortion.connect(filter);
+    filter.connect(compressor);
+    compressor.connect(masterGain);
+    
+    // Set base frequency
+    oscillator.frequency.setValueAtTime(freq, startTime);
+    
+    // Soothing 808 characteristics - gentler slide
+    const pitchDecayTime = 1.2; // Longer, gentler slide
+    const pitchDecayAmount = freq * 0.2 * slideIntensity; // Reduced slide for smoothness
+    oscillator.frequency.exponentialRampToValueAtTime(freq - pitchDecayAmount, startTime + pitchDecayTime);
+    
+    // Gentle 808 envelope
+    const attackTime = 0.1; // Softer attack
+    const decayTime = 4.0; // Very long, gentle decay
+    const sustainLevel = 0.5; // Lower sustain
+    const releaseTime = 3.0; // Longer release
+    
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.3, startTime + attackTime); // Much quieter
+    gainNode.gain.exponentialRampToValueAtTime(sustainLevel, startTime + attackTime + decayTime);
+    gainNode.gain.setValueAtTime(sustainLevel, startTime + duration - releaseTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    
+    // Gentle distortion for warmth
+    const curve = new Float32Array(44100);
+    for (let i = 0; i < 44100; i++) {
+      curve[i] = Math.tanh(i / 44100 * 2 - 1) * 0.3; // Much gentler distortion
+    }
+    distortion.curve = curve;
+    
+    // Low-pass filter for warmth
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(400, startTime); // Lower for warmth
+    filter.Q.setValueAtTime(1, startTime);
+    
+    // Gentle compression
+    compressor.threshold.setValueAtTime(-15, startTime);
+    compressor.knee.setValueAtTime(30, startTime);
+    compressor.ratio.setValueAtTime(2, startTime); // Gentler compression
+    compressor.attack.setValueAtTime(0.05, startTime);
+    compressor.release.setValueAtTime(0.2, startTime);
+    
+    oscillator.start(startTime);
+    oscillator.stop(startTime + duration);
+  };
+  
+  // Soothing 808 pattern - gentler frequencies (much quieter)
+  const bassFrequencies = [
+    // First section (0-5 seconds)
+    { freq: 65.41, time: 0, slide: 0.5 },      // C2 - gentler root
+    { freq: 82.41, time: 1.0, slide: 0.4 },    // E2 - gentler third
+    { freq: 65.41, time: 2.0, slide: 0.5 },    // C2 - root
+    { freq: 98.00, time: 3.0, slide: 0.3 },    // G2 - gentler fifth
+    { freq: 65.41, time: 4.0, slide: 0.5 },    // C2 - root
+    
+    // Second section (5-10 seconds)
+    { freq: 82.41, time: 5.0, slide: 0.4 },    // E2 - third
+    { freq: 65.41, time: 6.0, slide: 0.5 },    // C2 - root
+    { freq: 98.00, time: 7.0, slide: 0.3 },    // G2 - fifth
+    { freq: 65.41, time: 8.0, slide: 0.5 },    // C2 - root
+    { freq: 82.41, time: 9.0, slide: 0.4 },    // E2 - third
+    
+    // Third section (10-15 seconds)
+    { freq: 87.31, time: 10.0, slide: 0.5 },   // F2 - new root
+    { freq: 110.00, time: 11.0, slide: 0.4 },  // A2 - third
+    { freq: 87.31, time: 12.0, slide: 0.5 },   // F2 - root
+    { freq: 130.81, time: 13.0, slide: 0.3 },  // C3 - fifth
+    { freq: 87.31, time: 14.0, slide: 0.5 },   // F2 - root
+    
+    // Fourth section (15-20 seconds)
+    { freq: 110.00, time: 15.0, slide: 0.4 },  // A2 - third
+    { freq: 87.31, time: 16.0, slide: 0.5 },   // F2 - root
+    { freq: 130.81, time: 17.0, slide: 0.3 },  // C3 - fifth
+    { freq: 87.31, time: 18.0, slide: 0.5 },   // F2 - root
+    { freq: 110.00, time: 19.0, slide: 0.4 }   // A2 - final third
+  ];
+  
+  // Play 808 bass
+  bassFrequencies.forEach(({ freq, time, slide }) => {
+    create808Bass(freq, now + time, slide);
+  });
+  
+  // Soothing hi-hats - gentler approach
+  const createHiHat = (startTime: number, velocity: number = 1.0, type: 'open' | 'closed' = 'closed') => {
+    const bufferSize = audioContext!.sampleRate * (type === 'open' ? 0.4 : 0.08);
+    const buffer = audioContext!.createBuffer(1, bufferSize, audioContext!.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    // Generate gentler hi-hat noise
+    for (let i = 0; i < bufferSize; i++) {
+      const decay = type === 'open' ? 0.5 : 0.2; // Longer, gentler decay
+      output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * decay)) * 0.7; // Reduced intensity
+    }
+    
+    const source = audioContext!.createBufferSource();
+    const gainNode = audioContext!.createGain();
+    const filter = audioContext!.createBiquadFilter();
+    
+    source.buffer = buffer;
+    source.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(masterGain);
+    
+    // Soothing hi-hat envelope
+    const attackTime = 0.02; // Slightly longer attack
+    const decayTime = type === 'open' ? 0.3 : 0.1; // Longer decay
+    
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.08 * velocity, startTime + attackTime); // Much quieter
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + attackTime + decayTime);
+    
+    // Softer high-pass filter
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(8000, startTime); // Lower cutoff
+    filter.Q.setValueAtTime(1, startTime); // Gentler filter
+    
+    source.start(startTime);
+    source.stop(startTime + decayTime);
+  };
+  
+  // Gentler hi-hat pattern - much quieter
+  const hiHatPattern = [
+    // First section (0-5 seconds)
+    { time: 0, vel: 0.6, type: 'closed' },
+    { time: 0.5, vel: 0.4, type: 'closed' },
+    { time: 1.0, vel: 0.6, type: 'closed' },
+    { time: 1.5, vel: 0.4, type: 'closed' },
+    { time: 2.0, vel: 0.6, type: 'closed' },
+    { time: 2.5, vel: 0.4, type: 'closed' },
+    { time: 3.0, vel: 0.6, type: 'closed' },
+    { time: 3.5, vel: 0.4, type: 'closed' },
+    { time: 4.0, vel: 0.6, type: 'closed' },
+    { time: 4.5, vel: 0.4, type: 'closed' },
+    
+    // Second section (5-10 seconds)
+    { time: 5.0, vel: 0.6, type: 'closed' },
+    { time: 5.5, vel: 0.4, type: 'closed' },
+    { time: 6.0, vel: 0.6, type: 'closed' },
+    { time: 6.5, vel: 0.4, type: 'closed' },
+    { time: 7.0, vel: 0.6, type: 'closed' },
+    { time: 7.5, vel: 0.4, type: 'closed' },
+    { time: 8.0, vel: 0.6, type: 'closed' },
+    { time: 8.5, vel: 0.4, type: 'closed' },
+    { time: 9.0, vel: 0.6, type: 'closed' },
+    { time: 9.5, vel: 0.4, type: 'closed' },
+    
+    // Third section (10-15 seconds)
+    { time: 10.0, vel: 0.6, type: 'closed' },
+    { time: 10.5, vel: 0.4, type: 'closed' },
+    { time: 11.0, vel: 0.6, type: 'closed' },
+    { time: 11.5, vel: 0.4, type: 'closed' },
+    { time: 12.0, vel: 0.6, type: 'closed' },
+    { time: 12.5, vel: 0.4, type: 'closed' },
+    { time: 13.0, vel: 0.6, type: 'closed' },
+    { time: 13.5, vel: 0.4, type: 'closed' },
+    { time: 14.0, vel: 0.6, type: 'closed' },
+    { time: 14.5, vel: 0.4, type: 'closed' },
+    
+    // Fourth section (15-20 seconds)
+    { time: 15.0, vel: 0.6, type: 'closed' },
+    { time: 15.5, vel: 0.4, type: 'closed' },
+    { time: 16.0, vel: 0.6, type: 'closed' },
+    { time: 16.5, vel: 0.4, type: 'closed' },
+    { time: 17.0, vel: 0.6, type: 'closed' },
+    { time: 17.5, vel: 0.4, type: 'closed' },
+    { time: 18.0, vel: 0.6, type: 'closed' },
+    { time: 18.5, vel: 0.4, type: 'closed' },
+    { time: 19.0, vel: 0.6, type: 'closed' },
+    { time: 19.5, vel: 0.4, type: 'closed' }
+  ];
+  
+  hiHatPattern.forEach(({ time, vel, type }) => {
+    createHiHat(now + time, vel, type as 'open' | 'closed');
+  });
+  
+  // Soothing snare - gentler character
+  const createSnare = (startTime: number, velocity: number = 1.0) => {
+    const bufferSize = audioContext!.sampleRate * 0.4;
+    const buffer = audioContext!.createBuffer(1, bufferSize, audioContext!.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    // Generate gentler snare noise
+    for (let i = 0; i < bufferSize; i++) {
+      const noise = (Math.random() * 2 - 1) * Math.exp(-i / (bufferSize * 0.08)) * 0.5; // Reduced intensity
+      const pitch = Math.sin(i * 0.1) * Math.exp(-i / (bufferSize * 0.15)) * 0.3; // Gentler pitch
+      const clap = Math.sin(i * 0.2) * Math.exp(-i / (bufferSize * 0.05)) * 0.2; // Gentler clap
+      output[i] = (noise + pitch + clap) * 0.4; // Overall reduction
+    }
+    
+    const source = audioContext!.createBufferSource();
+    const gainNode = audioContext!.createGain();
+    const filter = audioContext!.createBiquadFilter();
+    const compressor = audioContext!.createDynamicsCompressor();
+    
+    source.buffer = buffer;
+    source.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(compressor);
+    compressor.connect(masterGain);
+    
+    // Soothing snare envelope
+    const attackTime = 0.02; // Gentler attack
+    const decayTime = 0.6; // Longer, gentler decay
+    
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.15 * velocity, startTime + attackTime); // Much quieter
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + attackTime + decayTime);
+    
+    // Softer band-pass filter
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(700, startTime); // Lower frequency
+    filter.Q.setValueAtTime(2, startTime);
+    
+    // Gentler compression
+    compressor.threshold.setValueAtTime(-10, startTime);
+    compressor.knee.setValueAtTime(40, startTime);
+    compressor.ratio.setValueAtTime(2, startTime); // Gentler compression
+    compressor.attack.setValueAtTime(0.02, startTime);
+    compressor.release.setValueAtTime(0.1, startTime);
+    
+    source.start(startTime);
+    source.stop(startTime + decayTime);
+  };
+  
+  // Gentler snare pattern - much quieter
+  const snareTimes = [1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0];
+  snareTimes.forEach(time => {
+    createSnare(now + time, 0.8); // Reduced velocity
+  });
+  
+  // Soothing atmospheric pad
+  const createAtmosphericPad = () => {
+    const oscillator = audioContext!.createOscillator();
+    const gainNode = audioContext!.createGain();
+    const filter = audioContext!.createBiquadFilter();
+    const delay = audioContext!.createDelay();
+    const delayGain = audioContext!.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(delay);
+    delay.connect(delayGain);
+    delayGain.connect(masterGain);
+    
+    // Soothing atmospheric frequency
+    oscillator.frequency.setValueAtTime(110.00, now); // A2 - warm and soothing
+    oscillator.type = 'sine'; // Pure, gentle tone
+    
+    // Long, soothing envelope
+    const attackTime = 2.0; // Very long, gentle attack
+    const decayTime = 5.0; // Very long decay
+    const sustainLevel = 0.3; // Higher sustain for warmth
+    const releaseTime = 4.0; // Long release
+    
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.03, now + attackTime); // Much quieter
+    gainNode.gain.linearRampToValueAtTime(sustainLevel, now + attackTime + decayTime);
+    gainNode.gain.setValueAtTime(sustainLevel, now + duration - releaseTime);
+    gainNode.gain.linearRampToValueAtTime(0, now + duration);
+    
+    // Warm low-pass filter
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(500, now); // Higher for warmth
+    filter.Q.setValueAtTime(1, now);
+    
+    // Soothing delay
+    delay.delayTime.setValueAtTime(0.6, now);
+    delayGain.gain.setValueAtTime(0.3, now); // Increased for warmth
+    delayGain.gain.linearRampToValueAtTime(0, now + duration);
+    
+    oscillator.start(now);
+    oscillator.stop(now + duration);
+  };
+  
+  // Add atmospheric pad
+  createAtmosphericPad();
+  
+  // Soothing kick - gentler punch
+  const createKick = (startTime: number, velocity: number = 1.0) => {
+    const oscillator = audioContext!.createOscillator();
+    const gainNode = audioContext!.createGain();
+    const filter = audioContext!.createBiquadFilter();
+    const compressor = audioContext!.createDynamicsCompressor();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(compressor);
+    compressor.connect(masterGain);
+    
+    // Gentler kick frequency sweep
+    oscillator.frequency.setValueAtTime(60, startTime);
+    oscillator.frequency.exponentialRampToValueAtTime(40, startTime + 0.2); // Gentler sweep
+    oscillator.type = 'sine';
+    
+    // Soothing kick envelope
+    const attackTime = 0.02; // Gentler attack
+    const decayTime = 0.4; // Longer decay
+    
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.25 * velocity, startTime + attackTime); // Much quieter
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + attackTime + decayTime);
+    
+    // Warm low-pass filter
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(300, startTime); // Higher for warmth
+    filter.Q.setValueAtTime(1, startTime);
+    
+    // Gentler compression
+    compressor.threshold.setValueAtTime(-5, startTime);
+    compressor.knee.setValueAtTime(30, startTime);
+    compressor.ratio.setValueAtTime(3, startTime); // Gentler compression
+    compressor.attack.setValueAtTime(0.005, startTime);
+    compressor.release.setValueAtTime(0.05, startTime);
+    
+    oscillator.start(startTime);
+    oscillator.stop(startTime + decayTime);
+  };
+  
+  // Gentler kick pattern - much quieter
+  const kickPattern = [
+    { time: 0, vel: 0.8 },
+    { time: 2.0, vel: 0.7 },
+    { time: 4.0, vel: 0.8 },
+    { time: 6.0, vel: 0.7 },
+    { time: 8.0, vel: 0.8 },
+    { time: 10.0, vel: 0.7 },
+    { time: 12.0, vel: 0.8 },
+    { time: 14.0, vel: 0.7 },
+    { time: 16.0, vel: 0.8 },
+    { time: 18.0, vel: 0.7 }
+  ];
+  
+  kickPattern.forEach(({ time, vel }) => {
+    createKick(now + time, vel);
+  });
+  
+  // Soothing clap - gentler character
+  const createClap = (startTime: number) => {
+    const bufferSize = audioContext!.sampleRate * 0.15;
+    const buffer = audioContext!.createBuffer(1, bufferSize, audioContext!.sampleRate);
+    const output = buffer.getChannelData(0);
+    
+    // Generate gentler clap sound
+    for (let i = 0; i < bufferSize; i++) {
+      const clap = Math.sin(i * 0.3) * Math.exp(-i / (bufferSize * 0.02)) * 0.5; // Reduced intensity
+      output[i] = clap * 0.4; // Overall reduction
+    }
+    
+    const source = audioContext!.createBufferSource();
+    const gainNode = audioContext!.createGain();
+    const filter = audioContext!.createBiquadFilter();
+    
+    source.buffer = buffer;
+    source.connect(gainNode);
+    gainNode.connect(filter);
+    filter.connect(masterGain);
+    
+    // Soothing clap envelope
+    const attackTime = 0.005;
+    const decayTime = 0.2; // Longer decay
+    
+    gainNode.gain.setValueAtTime(0, startTime);
+    gainNode.gain.linearRampToValueAtTime(0.12, startTime + attackTime); // Much quieter
+    gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + attackTime + decayTime);
+    
+    // Softer high-pass filter
+    filter.type = 'highpass';
+    filter.frequency.setValueAtTime(1500, startTime); // Lower cutoff
+    filter.Q.setValueAtTime(1.5, startTime);
+    
+    source.start(startTime);
+    source.stop(startTime + decayTime);
+  };
+  
+  // Gentler clap pattern - much quieter
+  const clapTimes = [1.5, 3.5, 5.5, 7.5, 9.5, 11.5, 13.5, 15.5, 17.5, 19.5];
+  clapTimes.forEach(time => {
+    createClap(now + time);
+  });
+  
+  // Classical background tune - orchestral fusion
+  const createClassicalMelody = () => {
+    // Extended classical chord progression for 20 seconds
+    const classicalProgression = [
+      // D minor (i) - 0-2.5 seconds
+      { time: 0, chord: [
+        { freq: 146.83, type: 'sine', gain: 0.25, voice: 'bass' },      // D3 - much louder
+        { freq: 293.66, type: 'sine', gain: 0.22, voice: 'tenor' },     // D4 - much louder
+        { freq: 349.23, type: 'sine', gain: 0.20, voice: 'alto' },      // F4 - much louder
+        { freq: 440.00, type: 'triangle', gain: 0.18, voice: 'soprano' } // A4 - much louder
+      ]},
+      // A minor (v) - 2.5-5 seconds
+      { time: 2.5, chord: [
+        { freq: 110.00, type: 'sine', gain: 0.25, voice: 'bass' },      // A2 - much louder
+        { freq: 220.00, type: 'sine', gain: 0.22, voice: 'tenor' },     // A3 - much louder
+        { freq: 261.63, type: 'sine', gain: 0.20, voice: 'alto' },      // C4 - much louder
+        { freq: 329.63, type: 'triangle', gain: 0.18, voice: 'soprano' } // E4 - much louder
+      ]},
+      // G major (IV) - 5-7.5 seconds
+      { time: 5, chord: [
+        { freq: 98.00, type: 'sine', gain: 0.25, voice: 'bass' },       // G2 - much louder
+        { freq: 196.00, type: 'sine', gain: 0.22, voice: 'tenor' },     // G3 - much louder
+        { freq: 246.94, type: 'sine', gain: 0.20, voice: 'alto' },      // B3 - much louder
+        { freq: 329.63, type: 'triangle', gain: 0.18, voice: 'soprano' } // E4 - much louder
+      ]},
+      // D minor (i) - 7.5-10 seconds
+      { time: 7.5, chord: [
+        { freq: 146.83, type: 'sine', gain: 0.25, voice: 'bass' },      // D3 - much louder
+        { freq: 293.66, type: 'sine', gain: 0.22, voice: 'tenor' },     // D4 - much louder
+        { freq: 349.23, type: 'sine', gain: 0.20, voice: 'alto' },      // F4 - much louder
+        { freq: 440.00, type: 'triangle', gain: 0.18, voice: 'soprano' } // A4 - much louder
+      ]},
+      // F major (bVI) - 10-12.5 seconds
+      { time: 10, chord: [
+        { freq: 174.61, type: 'sine', gain: 0.25, voice: 'bass' },      // F3 - much louder
+        { freq: 349.23, type: 'sine', gain: 0.22, voice: 'tenor' },     // F4 - much louder
+        { freq: 440.00, type: 'sine', gain: 0.20, voice: 'alto' },      // A4 - much louder
+        { freq: 523.25, type: 'triangle', gain: 0.18, voice: 'soprano' } // C5 - much louder
+      ]},
+      // A minor (v) - 12.5-15 seconds
+      { time: 12.5, chord: [
+        { freq: 110.00, type: 'sine', gain: 0.25, voice: 'bass' },      // A2 - much louder
+        { freq: 220.00, type: 'sine', gain: 0.22, voice: 'tenor' },     // A3 - much louder
+        { freq: 261.63, type: 'sine', gain: 0.20, voice: 'alto' },      // C4 - much louder
+        { freq: 329.63, type: 'triangle', gain: 0.18, voice: 'soprano' } // E4 - much louder
+      ]},
+      // G major (IV) - 15-17.5 seconds
+      { time: 15, chord: [
+        { freq: 98.00, type: 'sine', gain: 0.25, voice: 'bass' },       // G2 - much louder
+        { freq: 196.00, type: 'sine', gain: 0.22, voice: 'tenor' },     // G3 - much louder
+        { freq: 246.94, type: 'sine', gain: 0.20, voice: 'alto' },      // B3 - much louder
+        { freq: 329.63, type: 'triangle', gain: 0.18, voice: 'soprano' } // E4 - much louder
+      ]},
+      // D minor (i) - 17.5-20 seconds
+      { time: 17.5, chord: [
+        { freq: 146.83, type: 'sine', gain: 0.25, voice: 'bass' },      // D3 - much louder
+        { freq: 293.66, type: 'sine', gain: 0.22, voice: 'tenor' },     // D4 - much louder
+        { freq: 349.23, type: 'sine', gain: 0.20, voice: 'alto' },      // F4 - much louder
+        { freq: 440.00, type: 'triangle', gain: 0.18, voice: 'soprano' } // A4 - much louder
+      ]}
+    ];
+    
+    // Play classical progression
+    classicalProgression.forEach(({ time, chord }) => {
+      chord.forEach(({ freq, type, gain, voice }) => {
+        const oscillator = audioContext!.createOscillator();
+        const gainNode = audioContext!.createGain();
+        const filter = audioContext!.createBiquadFilter();
+        const delay = audioContext!.createDelay();
+        const delayGain = audioContext!.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(filter);
+        filter.connect(delay);
+        delay.connect(delayGain);
+        delayGain.connect(masterGain);
+        
+        // Set frequency and wave type
+        oscillator.frequency.setValueAtTime(freq, now + time);
+        oscillator.type = type as OscillatorType;
+        
+        // Classical envelope - long, smooth
+        const attackTime = 0.6; // Slightly shorter for more presence
+        const decayTime = 1.2; // Shorter for more definition
+        const sustainLevel = 0.8; // Higher sustain for prominence
+        const releaseTime = 1.0; // Shorter for clarity
+        
+        gainNode.gain.setValueAtTime(0, now + time);
+        gainNode.gain.linearRampToValueAtTime(gain, now + time + attackTime);
+        gainNode.gain.linearRampToValueAtTime(gain * sustainLevel, now + time + attackTime + decayTime);
+        gainNode.gain.setValueAtTime(gain * sustainLevel, now + time + 2.5 - releaseTime);
+        gainNode.gain.linearRampToValueAtTime(0, now + time + 2.5);
+        
+        // Add classical vibrato
+        const vibrato = audioContext!.createOscillator();
+        const vibratoGain = audioContext!.createGain();
+        vibrato.connect(vibratoGain);
+        vibratoGain.connect(oscillator.frequency);
+        vibrato.frequency.setValueAtTime(5.5, now + time); // Classical vibrato rate
+        vibratoGain.gain.setValueAtTime(freq * 0.003, now + time); // Slightly more vibrato
+        vibrato.start(now + time);
+        vibrato.stop(now + time + 2.5);
+        
+        // Low-pass filter for warmth
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(2500, now + time); // Higher for clarity
+        filter.Q.setValueAtTime(1.2, now + time);
+        
+        // Classical reverb
+        delay.delayTime.setValueAtTime(0.5, now + time);
+        delayGain.gain.setValueAtTime(0.25, now + time); // Slightly more reverb
+        delayGain.gain.linearRampToValueAtTime(0, now + time + 2.5);
+        
+        oscillator.start(now + time);
+        oscillator.stop(now + time + 2.5);
+      });
+    });
+  };
+  
+  // Add classical melody
+  createClassicalMelody();
+  
+  // Classical string section - sustained harmony (much louder)
+  const createStringSection = () => {
+    const stringVoices = [
+      { freq: 293.66, type: 'sine', gain: 0.15, voice: 'violin1' },     // D4 - much louder
+      { freq: 220.00, type: 'sine', gain: 0.18, voice: 'violin2' },     // A3 - much louder
+      { freq: 146.83, type: 'sine', gain: 0.20, voice: 'viola' },       // D3 - much louder
+      { freq: 110.00, type: 'sine', gain: 0.22, voice: 'cello' }        // A2 - much louder
+    ];
+    
+    stringVoices.forEach(({ freq, type, gain, voice }) => {
       const oscillator = audioContext!.createOscillator();
       const gainNode = audioContext!.createGain();
+      const filter = audioContext!.createBiquadFilter();
+      const delay = audioContext!.createDelay();
+      const delayGain = audioContext!.createGain();
       
       oscillator.connect(gainNode);
-      gainNode.connect(masterGain);
+      gainNode.connect(filter);
+      filter.connect(delay);
+      delay.connect(delayGain);
+      delayGain.connect(masterGain);
       
       // Set frequency and wave type
-      oscillator.frequency.setValueAtTime(freq, chordStartTime);
+      oscillator.frequency.setValueAtTime(freq, now);
       oscillator.type = type as OscillatorType;
       
-      // Create orchestral-style envelope with voice-specific characteristics
-      const attackTime = 0.3 + (noteIndex * 0.05); // Staggered attack for natural feel
-      const decayTime = 1.0;
-      const sustainLevel = voice === 'bass' ? 0.8 : 0.6; // Bass sustains longer
-      const releaseTime = chordDuration - attackTime - decayTime;
+      // String envelope - very long, sustained
+      const attackTime = 1.5; // Shorter for more presence
+      const decayTime = 2.5; // Shorter for more definition
+      const sustainLevel = 0.9; // Higher sustain for prominence
+      const releaseTime = 2.0; // Shorter for clarity
       
-      gainNode.gain.setValueAtTime(0, chordStartTime);
-      gainNode.gain.linearRampToValueAtTime(gain, chordStartTime + attackTime);
-      gainNode.gain.linearRampToValueAtTime(gain * sustainLevel, chordStartTime + attackTime + decayTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, chordStartTime + chordDuration);
+      gainNode.gain.setValueAtTime(0, now);
+      gainNode.gain.linearRampToValueAtTime(gain, now + attackTime);
+      gainNode.gain.linearRampToValueAtTime(gain * sustainLevel, now + attackTime + decayTime);
+      gainNode.gain.setValueAtTime(gain * sustainLevel, now + duration - releaseTime);
+      gainNode.gain.linearRampToValueAtTime(0, now + duration);
       
-      // Add subtle vibrato for classical authenticity
+      // Add string vibrato
       const vibrato = audioContext!.createOscillator();
       const vibratoGain = audioContext!.createGain();
       vibrato.connect(vibratoGain);
       vibratoGain.connect(oscillator.frequency);
-      vibrato.frequency.setValueAtTime(5.5, chordStartTime); // Classical vibrato rate
-      vibratoGain.gain.setValueAtTime(freq * 0.005, chordStartTime); // Subtle depth
-      vibrato.start(chordStartTime);
-      vibrato.stop(chordStartTime + chordDuration);
+      vibrato.frequency.setValueAtTime(6.0, now); // String vibrato rate
+      vibratoGain.gain.setValueAtTime(freq * 0.004, now); // More vibrato
+      vibrato.start(now);
+      vibrato.stop(now + duration);
       
-      // Add slight detuning for ensemble effect
-      const detuneAmount = (Math.random() - 0.5) * 2; // ±1 cent
-      oscillator.detune.setValueAtTime(detuneAmount, chordStartTime);
+      // String filter - warm and smooth
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1800, now); // Higher for clarity
+      filter.Q.setValueAtTime(1, now);
       
-      // Start and stop oscillator
-      oscillator.start(chordStartTime);
-      oscillator.stop(chordStartTime + chordDuration);
+      // String reverb
+      delay.delayTime.setValueAtTime(0.7, now);
+      delayGain.gain.setValueAtTime(0.2, now); // More reverb
+      delayGain.gain.linearRampToValueAtTime(0, now + duration);
+      
+      oscillator.start(now);
+      oscillator.stop(now + duration);
     });
-  });
+  };
   
-  // Add a subtle cathedral-like reverb
-  const delay1 = audioContext!.createDelay();
-  const delay2 = audioContext!.createDelay();
-  const delayGain1 = audioContext!.createGain();
-  const delayGain2 = audioContext!.createGain();
+  // Add string section
+  createStringSection();
   
-  delay1.delayTime.setValueAtTime(0.4, now);
-  delay2.delayTime.setValueAtTime(0.6, now);
-  delayGain1.gain.setValueAtTime(0.15, now);
-  delayGain2.gain.setValueAtTime(0.1, now);
+  // Classical woodwind melody - floating above (much louder)
+  const createWoodwindMelody = () => {
+    const woodwindMelody = [
+      // First phrase (0-5 seconds)
+      { freq: 440.00, time: 0.5, duration: 1.0 },   // A4
+      { freq: 493.88, time: 1.5, duration: 0.5 },   // B4
+      { freq: 523.25, time: 2.0, duration: 1.0 },   // C5
+      { freq: 493.88, time: 3.0, duration: 0.5 },   // B4
+      { freq: 440.00, time: 3.5, duration: 1.0 },   // A4
+      
+      // Second phrase (5-10 seconds)
+      { freq: 392.00, time: 5.5, duration: 0.5 },   // G4
+      { freq: 440.00, time: 6.0, duration: 1.0 },   // A4
+      { freq: 493.88, time: 7.0, duration: 0.5 },   // B4
+      { freq: 523.25, time: 7.5, duration: 1.0 },   // C5
+      { freq: 587.33, time: 8.5, duration: 0.5 },   // D5
+      { freq: 523.25, time: 9.0, duration: 1.0 },   // C5
+      
+      // Third phrase (10-15 seconds)
+      { freq: 493.88, time: 10.5, duration: 0.5 },  // B4
+      { freq: 440.00, time: 11.0, duration: 1.0 },  // A4
+      { freq: 392.00, time: 12.0, duration: 0.5 },  // G4
+      { freq: 349.23, time: 12.5, duration: 1.0 },  // F4
+      { freq: 392.00, time: 13.5, duration: 0.5 },  // G4
+      { freq: 440.00, time: 14.0, duration: 1.0 },  // A4
+      
+      // Fourth phrase (15-20 seconds)
+      { freq: 493.88, time: 15.5, duration: 0.5 },  // B4
+      { freq: 523.25, time: 16.0, duration: 1.0 },  // C5
+      { freq: 587.33, time: 17.0, duration: 0.5 },  // D5
+      { freq: 659.25, time: 17.5, duration: 1.0 },  // E5
+      { freq: 587.33, time: 18.5, duration: 0.5 },  // D5
+      { freq: 523.25, time: 19.0, duration: 1.0 },  // C5
+      { freq: 493.88, time: 19.5, duration: 0.5 }   // B4
+    ];
+    
+    woodwindMelody.forEach(({ freq, time, duration: noteDuration }) => {
+      const oscillator = audioContext!.createOscillator();
+      const gainNode = audioContext!.createGain();
+      const filter = audioContext!.createBiquadFilter();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(filter);
+      filter.connect(masterGain);
+      
+      // Set frequency and wave type
+      oscillator.frequency.setValueAtTime(freq, now + time);
+      oscillator.type = 'triangle'; // Woodwind-like
+      
+      // Woodwind envelope - quick attack, natural decay
+      const attackTime = 0.08; // Slightly longer for presence
+      const decayTime = 0.4; // Longer for presence
+      const sustainLevel = 0.7; // Higher sustain
+      const releaseTime = 0.5; // Longer release
+      
+      gainNode.gain.setValueAtTime(0, now + time);
+      gainNode.gain.linearRampToValueAtTime(0.12, now + time + attackTime); // Much louder
+      gainNode.gain.linearRampToValueAtTime(sustainLevel * 0.12, now + time + attackTime + decayTime);
+      gainNode.gain.setValueAtTime(sustainLevel * 0.12, now + time + noteDuration - releaseTime);
+      gainNode.gain.linearRampToValueAtTime(0, now + time + noteDuration);
+      
+      // Woodwind filter - bright and airy
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1000, now + time); // Higher for clarity
+      filter.Q.setValueAtTime(2.5, now + time);
+      
+      oscillator.start(now + time);
+      oscillator.stop(now + time + noteDuration);
+    });
+  };
   
-  delayGain1.gain.exponentialRampToValueAtTime(0.01, now + duration);
-  delayGain2.gain.exponentialRampToValueAtTime(0.01, now + duration);
-  
-  delay1.connect(delayGain1);
-  delay2.connect(delayGain2);
-  delayGain1.connect(masterGain);
-  delayGain2.connect(masterGain);
+  // Add woodwind melody
+  createWoodwindMelody();
   
   // Visual feedback
   chimePlaying.value = true;
@@ -380,7 +933,7 @@ function playChime(isTest: boolean = false): void {
   if (!isTest) {
     chimeSequenceCount++;
     if (chimeSequenceCount < TOTAL_CHIMES) {
-      // Schedule next chime
+      // Schedule next chime with perfect timing for seamless loop
       setTimeout(() => {
         playChime(false);
       }, CHIME_INTERVAL);
@@ -436,26 +989,22 @@ const timeInWords = computed(() => {
   const min = minutes.value;
   const sec = seconds.value;
   
-  // More than 1 minute remaining
-  if (min > 1) {
+  // 1 minute or more remaining - show minutes with proper rounding
+  if (min >= 1) {
     // Round up if more than 30 seconds remaining
     const displayMinutes = sec > 30 ? min + 1 : min;
-    return `${numberToWords(displayMinutes)} minutes left.`;
-  }
-  
-  // Exactly 1 minute remaining
-  if (min === 1) {
-    if (sec === 0) {
-      return 'Just one minute left.';
+    
+    if (displayMinutes > 1) {
+      return `${displayMinutes} minutes left.`;
     } else {
-      return formatSecondsOnly(sec);
+      return `Just a minute left!`;
     }
   }
   
-  // Less than 1 minute remaining
+  // Less than 1 minute remaining - show only seconds
   if (min === 0) {
     if (sec > 0) {
-      return formatSecondsOnly(sec);
+      return `${sec} seconds left.`;
     } else {
       return '---';
     }
@@ -463,15 +1012,6 @@ const timeInWords = computed(() => {
   
   return '---';
 });
-
-function formatSecondsOnly(sec: number): string {
-  if (sec < COUNTDOWN_THRESHOLD) {
-    return `${sec}`;
-  } else {
-    const roundedSec = Math.floor(sec / 10) * 10;
-    return `Only ${numberToWords(roundedSec)} seconds to go!`;
-  }
-}
 
 // ===== TIMER CONTROLS =====
 function startTimer(): void {
