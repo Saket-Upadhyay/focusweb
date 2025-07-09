@@ -13,7 +13,7 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', href: '/favicon.svg' }
       ]
     },
-    baseURL: process.env.NODE_ENV === 'production' ? '/focusweb/' : '/'
+    baseURL: process.env.NODE_ENV === 'production' ? '/justamin/' : '/'
   },
   
   // Enable static site generation for GitHub Pages
