@@ -27,7 +27,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 
-// --- Props ---
+
 const props = defineProps({
   modelValue: { type: Number, required: true },
   disabled: { type: Boolean, default: false },
@@ -37,7 +37,7 @@ const props = defineProps({
 });
 const emit = defineEmits(['update:modelValue']);
 
-// --- State ---
+
 const itemHeight = 30;
 const visibleCount = 3;
 const scrollY = ref((props.modelValue + props.max) * itemHeight);
@@ -45,12 +45,12 @@ const paddingCount = Math.floor(visibleCount / 2);
 let touchStartY = 0;
 let lastScrollY = scrollY.value;
 
-// --- Computed ---
+
 const listStyle = computed(() => ({
   transform: `translateY(${-scrollY.value + paddingCount * itemHeight}px)`
 }));
 
-// --- Methods ---
+
 function select(val: number) {
   emit('update:modelValue', val);
 }
@@ -59,7 +59,7 @@ function onWheel(e: WheelEvent) {
   scrollY.value += e.deltaY;
   clampScroll();
   updateSelected();
-  // Looping logic for infinite scroll
+  
   if (scrollY.value <= 0 && e.deltaY < 0) {
     emit('update:modelValue', props.max);
     scrollY.value = (props.max + props.max) * itemHeight;
@@ -107,7 +107,7 @@ function onKeydown(e: KeyboardEvent) {
   }
 }
 function clampScroll() {
-  // Clamp to a wide range to avoid abrupt jumps
+  
   if (scrollY.value < 0) scrollY.value = 0;
   if (scrollY.value > (props.max * 3 - 1) * itemHeight) scrollY.value = (props.max * 3 - 1) * itemHeight;
 }
@@ -116,13 +116,13 @@ function updateSelected() {
   emit('update:modelValue', (val + props.max) % props.max + props.min);
 }
 
-// --- Watchers ---
+
 watch(() => props.modelValue, (val) => {
-  // Always keep the selected value in the middle set
+  
   scrollY.value = (val - props.min + props.max) * itemHeight;
 });
 
-// --- Lifecycle ---
+
 onMounted(() => {
   if (props.keyboard) window.addEventListener('keydown', onKeydown);
 });

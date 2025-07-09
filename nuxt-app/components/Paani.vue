@@ -30,7 +30,7 @@ function resizeCanvas() {
     canvas.value.width = window.innerWidth;
     canvas.value.height = window.innerHeight;
     canvasHeight = window.innerHeight;
-    // Ensure canvas covers full viewport
+    
     canvas.value.style.width = '100vw';
     canvas.value.style.height = '100vh';
   }
@@ -42,8 +42,8 @@ function initParticles() {
     particles.push({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      length: Math.random() * 8 + 4, // raindrop length
-      speed: Math.random() * 2 + 0.8 // drizzle speed
+      length: Math.random() * 8 + 4, 
+      speed: Math.random() * 2 + 0.8 
     });
   }
 }
@@ -54,8 +54,8 @@ function resetParticles() {
     particles.push({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
-      length: Math.random() * 8 + 4, // raindrop length
-      speed: Math.random() * 2 + 0.8 // drizzle speed
+      length: Math.random() * 8 + 4, 
+      speed: Math.random() * 2 + 0.8 
     });
   }
 }
@@ -63,12 +63,12 @@ function resetParticles() {
 function drawPuddle(waterLevel: number) {
   if (!ctx || !canvas.value) return;
   
-  // Ensure waterLevel is valid
+  
   if (isNaN(waterLevel) || waterLevel < 0) {
-    waterLevel = canvas.value.height * 0.1; // fallback to 10% from bottom
+    waterLevel = canvas.value.height * 0.1; 
   }
   
-  // Draw multiple layers for depth effect
+  
   const layers = [
     { opacity: 0.3, waveOffset: waveOffset * 0.5, amplitude: 8 },
     { opacity: 0.5, waveOffset: waveOffset * 0.8, amplitude: 12 },
@@ -98,35 +98,35 @@ function drawPuddle(waterLevel: number) {
 function drawParticles() {
   if (!ctx || !canvas.value) return;
   
-  // Clear the canvas first
+  
   ctx.clearRect(0, 0, canvas.value.width, canvas.value.height);
   
-  // Weather phases based on progress percentage
-  const isPhase1 = props.progressPercentage >= 0.3 && props.progressPercentage < 0.5; // 30-50%
-  const isPhase2 = props.progressPercentage >= 0.5 && props.progressPercentage < 0.7; // 50-70%
-  const isPhase3 = props.progressPercentage >= 0.7 && props.progressPercentage < 0.8; // 70-80%
-  const isPhase4 = props.progressPercentage >= 0.8 && props.progressPercentage < 0.95; // 80-95%
-  const isFinalPhase = props.progressPercentage >= 0.95 && props.progressPercentage < 1; // 95-100%
   
-  // Background darkening effects
+  const isPhase1 = props.progressPercentage >= 0.3 && props.progressPercentage < 0.5; 
+  const isPhase2 = props.progressPercentage >= 0.5 && props.progressPercentage < 0.7; 
+  const isPhase3 = props.progressPercentage >= 0.7 && props.progressPercentage < 0.8; 
+  const isPhase4 = props.progressPercentage >= 0.8 && props.progressPercentage < 0.95; 
+  const isFinalPhase = props.progressPercentage >= 0.95 && props.progressPercentage < 1; 
+  
+  
   if (isPhase1 || isPhase2 || isPhase3 || isPhase4 || isFinalPhase) {
     let stormIntensity = 0;
     if (isPhase1) {
-      stormIntensity = (props.progressPercentage - 0.3) / 0.2; // 0 to 1 over phase 1
+      stormIntensity = (props.progressPercentage - 0.3) / 0.2; 
     } else if (isPhase2) {
-      stormIntensity = 1 + (props.progressPercentage - 0.5) / 0.2; // 1 to 2 over phase 2
+      stormIntensity = 1 + (props.progressPercentage - 0.5) / 0.2; 
     } else if (isPhase3) {
-      stormIntensity = 2 + (props.progressPercentage - 0.7) / 0.1; // 2 to 3 over phase 3
+      stormIntensity = 2 + (props.progressPercentage - 0.7) / 0.1; 
     } else if (isPhase4) {
-      stormIntensity = 3 + (props.progressPercentage - 0.8) / 0.15; // 3 to 4 over phase 4
+      stormIntensity = 3 + (props.progressPercentage - 0.8) / 0.15; 
     } else if (isFinalPhase) {
-      stormIntensity = 4; // Maintain maximum intensity in final phase
+      stormIntensity = 4; 
     }
     
     ctx.fillStyle = `rgba(0, 0, 0, ${0.05 * stormIntensity})`;
     ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
     
-    // Lightning flash (after 70%)
+    
     if ((isPhase3 || isPhase4) && lightningFlash > 0) {
       ctx.fillStyle = `rgba(255, 255, 200, ${lightningFlash * 0.4})`;
       ctx.fillRect(0, 0, canvas.value.width, canvas.value.height);
@@ -136,9 +136,9 @@ function drawParticles() {
   
   const waterLevel = canvas.value.height - canvas.value.height * animatedProgress;
   
-  // Only draw particles if timer hasn't ended (progress < 1)
+  
   if (props.progress < 1) {
-    // Rain intensity based on phases
+    
     let rainIntensity = 1;
     let rainOpacity = 0.5;
     let rainWidth = 1.2;
@@ -177,7 +177,7 @@ function drawParticles() {
     }
   }
   
-  // Always draw the puddle
+  
   drawPuddle(waterLevel);
 }
 
@@ -186,12 +186,12 @@ function updateParticles() {
   const speedMultiplier = props.isRunning ? 2.5 : 0.4;
   for (const p of particles) {
     p.y += p.speed * speedMultiplier;
-    // If raindrop hits the puddle, respawn at the top
+    
     if (p.y + p.length >= waterLevel) {
       p.y = 0;
       p.x = Math.random() * window.innerWidth;
     }
-    // If particle is out of bounds at the bottom, respawn at the top
+    
     if (p.y > canvasHeight) {
       p.y = 0;
       p.x = Math.random() * window.innerWidth;
@@ -202,21 +202,21 @@ function updateParticles() {
 function animate() {
   waveOffset += props.isRunning ? 0.08 : 0.01;
   
-  // Lightning effects (after 70%)
+  
   const isThunderPhase = props.progressPercentage >= 0.7 && props.progressPercentage < 0.95;
   
   if (isThunderPhase) {
     thunderTimer++;
-    if (thunderTimer > 120 && Math.random() < 0.02) { // Random lightning every ~2 seconds
+    if (thunderTimer > 120 && Math.random() < 0.02) { 
       lightningFlash = 1;
       thunderTimer = 0;
     }
   }
   
-  // Smoothly interpolate animatedProgress toward props.progress or 0 if flushing
+  
   if (props.flushing) {
     animatedProgress += (0 - animatedProgress) * 0.15;
-    // Reset particles when flushing starts
+    
     if (animatedProgress < 0.1) {
       resetParticles();
     }
@@ -243,7 +243,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', resizeCanvas);
 });
 
-// Redraw when progress changes
+
 watch(() => props.progress, () => {
   drawParticles();
 });
